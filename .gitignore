@@ -50,6 +50,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 cover/
+*.csv
 
 # Model Files
 *.pth
@@ -130,6 +131,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+wandb/
 
 # Spyder project settings
 .spyderproject
