@@ -1,11 +1,14 @@
 import copy
 import torch
+import warnings
 import numpy as np
 from scipy.stats import pearsonr
 from torch.utils.data import Dataset
 
 from tgrl.models import text_model_dict
 
+# Ignore the HF warnings
+warnings.simplefilter("ignore")
 
 class TGRLDataloader(Dataset):
     """

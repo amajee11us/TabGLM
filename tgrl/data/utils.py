@@ -8,6 +8,9 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from torch.utils.data import DataLoader
 
+from tgrl.utils import set_seed
+
+
 def pick_dataset_openml(dataset_name, target, random_state):
     """
     Fetch OpenML dataset - General wrapper for dataset collections
@@ -79,23 +82,14 @@ def preprocess_and_load_data(data_config=None):
     Master script for normalizing and pre-processing openML datasets
     """
     if data_config is None:
-
-        # Get the current directory (should be where your notebook is)
-        current_notebook_path = os.getcwd()
-        # Navigate up to the parent directory (your_project_root)
-        parent_directory = os.path.dirname(current_notebook_path)
-        # Now, construct the path to the configuration file
-        config_path = os.path.join(parent_directory, "configs", "config.yml")
-
-        with open(config_path, "r") as stream:
-            try:
-                config = yaml.safe_load(stream)
-            except yaml.YAMLError as exc:
-                print(exc)
-
-        config = config["data_config"]
+        raise Exception(
+            "Invalid data configuration found ! Please provide a valid config file."
+        )
     else:
         config = data_config
+
+    # Set dataset seed - currently common
+    set_seed(data_config["random_state"])
 
     # Load the dataset
     X_train, X_val, X_test, y_train, y_val, y_test = pick_dataset_openml(
@@ -170,13 +164,16 @@ def preprocess_and_load_data(data_config=None):
         scaler_y,
     )
 
-def create_dataloader(dataset, phase, batch_size):   
+
+def create_dataloader(dataset, phase, batch_size):
     # Create dataloaders
-    shuffle = (phase == 'train')
-    setloader = DataLoader(dataset, 
-                           batch_size=batch_size, 
-                           shuffle=shuffle, 
-                           drop_last=False, 
-                           num_workers=12, 
-                           pin_memory=True)
+    shuffle = phase == "train"
+    setloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        drop_last=False,
+        num_workers=12,
+        pin_memory=True,
+    )
     return setloader
