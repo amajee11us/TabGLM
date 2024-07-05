@@ -15,7 +15,6 @@ class TGRLModel(nn.Module):
         is_supervised=True,
     ):
         super(TGRLModel, self).__init__()
-        print(num_classes)
         # fetch the graph model - parameters are trainable
         self.graph_encoder = GraphNetwork(
             graph_input_dim, embedding_dim, adjacency_matrix

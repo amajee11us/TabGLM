@@ -3,7 +3,7 @@ import os
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
 from tgrl.engine import TGRLMultiModalModel
-from tgrl.dataset import preprocess_and_load_data
+from tgrl.data import preprocess_and_load_data
 from tgrl.utils import get_config, store_metrics_as_csv, set_seed
 import argparse
 import wandb
