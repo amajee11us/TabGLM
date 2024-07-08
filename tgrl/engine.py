@@ -37,9 +37,6 @@ class TGRLMultiModalModel:
         # Initialize the pretrained model to NULL
         self.pretrained_model = None
 
-        # set the random state
-        set_seed(self.random_state)
-
     def _parse_config(self, config):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
