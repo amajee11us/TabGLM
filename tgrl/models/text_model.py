@@ -21,6 +21,12 @@ class TextNetwork(nn.Module):
         self.tokenizer = model_dict[encoder_name]["tokenizer"]
         self.embedding_dim = model_dict[encoder_name]["embedding_dim"]
 
+        self.__init__parameters()
+    
+    def __init__parameters(self):
+        for param in self.model.encoder.parameters():
+            param.requires_grad = False
+
     def forward(self, text_inputs, label=None):
         if label is not None:
             raise NotImplementedError(
