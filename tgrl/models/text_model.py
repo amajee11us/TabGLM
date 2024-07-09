@@ -24,7 +24,6 @@ class TextNetwork(nn.Module):
         self.embedding_dim = model_dict[encoder_name]["embedding_dim"]
 
         self.__init__parameters()
-        print(self.model)
 
     def __init__parameters(self):
         if self.encoder_type == "tapex":  # TAPEX has both encoder and decoder
