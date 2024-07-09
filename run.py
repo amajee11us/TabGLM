@@ -19,9 +19,6 @@ def main(config_paths):
         local_save_path = fit_config.get("metrics_save_path", "tgrl_output_metrics.csv")
 
         for seed in random_states:
-            # Set the system seed
-            set_seed(seed)
-
             if wandb_project_name:
                 wandb.init(project=wandb_project_name)
                 wandb.config.fit_config = fit_config

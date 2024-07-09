@@ -36,21 +36,28 @@ GPUS=$1
 # Since early stopping in enabled, the number of epochs need not be varied
 BATCH_SIZE=$2
 
+# Pass the text encoder as an argument to the model
+TEXT_ENCODER=$3
+
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
-# "pc3" "ova_breast" "mfeat_fourier"
-datasets=("coil2000" \
+datasets=("pc3" \
+        #   "ova_breast" \
+          "mfeat_fourier" \
+          "coil2000" \
           "kr_vs_kp" \
-          "isolet" \
-          "texture" \
-          "har" \
-          "dilbert")
+        #   "isolet" \
+          "texture")
+        #   "har" \
+        #   "dilbert")
         #   "fashion_mnist", "cifar_10")
 
 # Loop through the array and print each string
 for dataset in "${datasets[@]}"; do
     CONFIG_FILE_PATH="config_${dataset}.yml"
     update_yaml "$CONFIG_FILE_PATH" "fit_config.batch_size" "$BATCH_SIZE"
+    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_encoder" "$TEXT_ENCODER"
+    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_tokenizer" "$TEXT_ENCODER"
 
     echo "Running train and eval on $dataset dataset"
     CUDA_VISIBLE_DEVICES=$GPUS python run.py config_${dataset}.yml

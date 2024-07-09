@@ -37,9 +37,6 @@ class TGRLMultiModalModel:
         # Initialize the pretrained model to NULL
         self.pretrained_model = None
 
-        # set the random state 
-        set_seed(self.random_state)
-
     def _parse_config(self, config):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -82,13 +79,13 @@ class TGRLMultiModalModel:
 
         print("Processing Train Dataset ...")
         self.train_dataset = TGRLDataloader(
-            X_train_norm, y_train_enc, multimodal=True, text_encoder="tapas"
+            X_train_norm, y_train_enc, multimodal=True, text_encoder=self.text_tokenizer
         )
         print("Done.")
 
         print("Processing Val Dataset ...")
         self.val_dataset = TGRLDataloader(
-            X_val_norm, y_val_enc, multimodal=True, text_encoder="tapas"
+            X_val_norm, y_val_enc, multimodal=True, text_encoder=self.text_tokenizer
         )
         print("Done.")
 
