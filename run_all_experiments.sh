@@ -24,8 +24,8 @@ update_yaml() {
 }
 
 # Check if correct number of arguments is provided
-if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <GPU_IDs> <Batch_Size>"
+if [[ $# -ne 3 ]]; then
+    echo "Usage: $0 <GPU_IDs> <Batch_Size> <Text_Encoder>"
     exit 1
 fi
 
