@@ -12,7 +12,7 @@ data_config:
 fit_config:
   dataset: 3
   num_epochs: 512
-  learning_rate: 1.0e-05
+  learning_rate: 1.0e-04
   task_type: binary
   project_name: tgrl_multi_modal
   random_state:
@@ -21,7 +21,7 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 64
+  batch_size: 224
   batch_size_transform: 10000
   consistency: true
   multimodal: true

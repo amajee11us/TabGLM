@@ -12,7 +12,7 @@ data_config:
 fit_config:
   dataset: 971
   num_epochs: 512
-  learning_rate: 1.0e-05
+  learning_rate: 0.0001
   task_type: binary
   project_name: tgrl_multi_modal
   random_state:
