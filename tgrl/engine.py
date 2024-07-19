@@ -252,11 +252,17 @@ class TGRLMultiModalModel:
 
         return predictions
 
-    def evaluate(self, X, y, shuffle_channels_flag=False):
+    def evaluate(self, X, y, shuffle_channels_flag=False, categorical_encoder=None):
         model = self.model
         model.load_state_dict(torch.load(self.best_model_path))
 
-        dataset = TGRLDataloader(X, y, multimodal=True, text_encoder="tapas")
+        dataset = TGRLDataloader(
+            X,
+            y,
+            multimodal=True,
+            text_encoder="tapas",
+            categorical_encoder=categorical_encoder,
+        )
         testloader = create_dataloader(self.val_dataset, "test", self.batch_size)
 
         loss, metrics = evaluate_model(

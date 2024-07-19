@@ -45,7 +45,9 @@ def main(config_paths):
                 y_val_enc=y_val_enc,
                 categorical_encoder=cat_encoder,
             )
-            metrics = tabularTrans.evaluate(X_test_norm, y_test_enc)
+            metrics = tabularTrans.evaluate(
+                X_test_norm, y_test_enc, categorical_encoder=cat_encoder
+            )
             print(f"Finished processing {config_path} with random seed {seed}")
 
             print("Aggregating Metrics ...")
