@@ -1,19 +1,19 @@
 data_config:
-  dataset: texture
-  target: Class
+  dataset: jungle
+  target: label
   random_states:
     - 15
     - 108
     - 180
     - 234
     - 250
-  task_type: multi_class
+  task_type: binary
   na_threshold: 0.15
 fit_config:
-  dataset: texture
-  num_epochs: 512
+  dataset: jungle
+  num_epochs: 240
   learning_rate: 1.0e-04
-  task_type: multi_class
+  task_type: binary
   project_name: tgrl_multi_modal
   random_state:
     - 15
