@@ -231,7 +231,7 @@ def get_income_dataset(dataset_name, target, random_state):
     original_size = len(dataset_train)
     strip_string_columns(dataset_train)
     dataset_train['label'] = dataset_train['label'] == '>50K'
-    dataset['label'] = dataset['label'].replace(binary_mapping)
+    dataset_train['label'] = dataset_train['label'].replace(binary_mapping)
 
     X, y = dataset_train.drop(target, axis=1), dataset_train[target]
     X = X.loc[:, X.nunique() > 1]
@@ -245,7 +245,7 @@ def get_income_dataset(dataset_name, target, random_state):
     dataset_test = dataset_test.drop(columns=['fnlwgt', 'education_num'])
     strip_string_columns(dataset_test)
     dataset_test['label'] = dataset_test['label'] == '>50K.'
-    dataset['label'] = dataset['label'].replace(binary_mapping)
+    dataset_test['label'] = dataset_test['label'].replace(binary_mapping)
 
     X_test, y_test = dataset_test.drop(target, axis=1), dataset_test[target]
     X_test = X_test.loc[:, X_test.nunique() > 1]

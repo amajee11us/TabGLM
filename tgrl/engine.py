@@ -75,17 +75,27 @@ class TGRLMultiModalModel:
         # Globally used tags
         self.task_type = self.fit_config.get("task_type", None)
 
-    def _data_transformation(self, X_train_norm, X_val_norm, y_train_enc, y_val_enc):
+    def _data_transformation(
+        self, X_train_norm, X_val_norm, y_train_enc, y_val_enc, categorical_encoder
+    ):
 
         print("Processing Train Dataset ...")
         self.train_dataset = TGRLDataloader(
-            X_train_norm, y_train_enc, multimodal=True, text_encoder=self.text_tokenizer
+            X_train_norm,
+            y_train_enc,
+            multimodal=True,
+            text_encoder=self.text_tokenizer,
+            categorical_encoder=categorical_encoder,
         )
         print("Done.")
 
         print("Processing Val Dataset ...")
         self.val_dataset = TGRLDataloader(
-            X_val_norm, y_val_enc, multimodal=True, text_encoder=self.text_tokenizer
+            X_val_norm,
+            y_val_enc,
+            multimodal=True,
+            text_encoder=self.text_tokenizer,
+            categorical_encoder=categorical_encoder,
         )
         print("Done.")
 
@@ -200,14 +210,23 @@ class TGRLMultiModalModel:
         if verbose:
             print(f"Training completed. Best epoch {best_epoch:.2f}.")
 
-    def fit(self, X_train_norm, X_val_norm, y_train_enc, y_val_enc, transform=True):
+    def fit(
+        self,
+        X_train_norm,
+        X_val_norm,
+        y_train_enc,
+        y_val_enc,
+        transform=True,
+        categorical_encoder=None,
+    ):
         # Calculate the Number of classes
         self.num_classes = (
             len(np.unique(y_train_enc)) if self.task_type == "multi_class" else 1
         )
 
-        print("Transforming data...")
-        self._data_transformation(X_train_norm, X_val_norm, y_train_enc, y_val_enc)
+        self._data_transformation(
+            X_train_norm, X_val_norm, y_train_enc, y_val_enc, categorical_encoder
+        )
 
         print("Loading the model ...")
         self._model_factory(y_train_enc)

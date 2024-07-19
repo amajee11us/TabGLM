@@ -34,10 +34,17 @@ def main(config_paths):
                 y_val_enc,
                 y_test_enc,
                 scaler_y,
+                cat_encoder,
             ) = preprocess_and_load_data(data_config)
             tabularTrans = TGRLMultiModalModel(fit_config)
 
-            tabularTrans.fit(X_train_norm, X_val_norm, y_train_enc, y_val_enc)
+            tabularTrans.fit(
+                X_train_norm=X_train_norm,
+                X_val_norm=X_val_norm,
+                y_train_enc=y_train_enc,
+                y_val_enc=y_val_enc,
+                categorical_encoder=cat_encoder,
+            )
             metrics = tabularTrans.evaluate(X_test_norm, y_test_enc)
             print(f"Finished processing {config_path} with random seed {seed}")
 
