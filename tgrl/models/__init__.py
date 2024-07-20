@@ -1,8 +1,8 @@
 from transformers import (
     TapasTokenizer,
+    TapexTokenizer,
     TapasModel,
-    AutoTokenizer,
-    AutoModelForSequenceClassification,
+    BartForSequenceClassification,
 )
 
 text_model_dict = {
@@ -12,12 +12,12 @@ text_model_dict = {
         "embedding_dim": 768,
     },
     "tapex": {
-        "tokenizer": AutoTokenizer.from_pretrained(
-            "microsoft/tapex-large-finetuned-tabfact"
+        "tokenizer": TapexTokenizer.from_pretrained(
+            "microsoft/tapex-base"
         ),
-        "model": AutoModelForSequenceClassification.from_pretrained(
-            "microsoft/tapex-large-finetuned-tabfact"
+        "model": BartForSequenceClassification.from_pretrained(
+            "microsoft/tapex-base-finetuned-tabfact"
         ),
-        "embedding_dim": 1024,
+        "embedding_dim": 768,
     },
 }

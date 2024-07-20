@@ -5,38 +5,35 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import (
+    MinMaxScaler,
+    OneHotEncoder,
+    StandardScaler,
+    LabelEncoder,
+)
 from torch.utils.data import DataLoader
 
 from tgrl.utils import set_seed
+from tgrl.data.datasets import *
 
-
-def pick_dataset_openml(dataset_name, target, random_state):
-    """
-    Fetch OpenML dataset - General wrapper for dataset collections
-    """
-    # Get dataset by name
-    dataset = openml.datasets.get_dataset(dataset_name)
-    print(dataset)
-
-    # Get the data itself as a dataframe (or otherwise)
-    df, y, _, _ = dataset.get_data(dataset_format="dataframe")
-
-    for column in df.columns:
-        if df[column].dtype == "category":  # Assuming object dtype implies categorical
-            df[column] = pd.factorize(df[column])[0]
-
-    X, y = df.drop(target, axis=1), df[target]
-    X = X.loc[:, X.nunique() > 1]
-
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=random_state
-    )
-    X_train, X_val, y_train, y_val = train_test_split(
-        X_train, y_train, test_size=0.2, random_state=random_state
-    )
-
-    return X_train, X_val, X_test, y_train, y_val, y_test
+dataset_factory = {
+    # TabLLM benchmark datasets
+    "bank": get_bank_dataset,
+    "blood": get_blood_dataset,
+    "calhousing": get_calhousing_dataset,
+    "car": get_car_dataset,
+    "creditg": get_creditg_dataset,
+    "diabetes": get_diabetes_dataset,
+    "heart": get_heart_dataset,
+    "income": get_income_dataset,
+    "jungle": get_jungle_dataset,
+    # OpenML benchmark datasets
+    "pc3": get_openml_dataset,
+    "kr_vs_kp": get_openml_dataset,
+    "mfeat_fourier": get_openml_dataset,
+    "coil2000": get_openml_dataset,
+    "texture": get_openml_dataset,
+}
 
 
 def to_dense_array(series):
@@ -92,45 +89,98 @@ def preprocess_and_load_data(data_config=None):
     set_seed(data_config["random_state"])
 
     # Load the dataset
-    X_train, X_val, X_test, y_train, y_val, y_test = pick_dataset_openml(
+    assert config["dataset"] in list(dataset_factory.keys())
+
+    X_train, X_val, X_test, y_train, y_val, y_test = dataset_factory[config["dataset"]](
         config["dataset"], config["target"], config["random_state"]
     )
 
-    # Initialize the scalers
+    # # Initialize the scalers
     ln = Norm2Scaler()
     scaler_y = (
         StandardScaler() if config["task_type"] == "regression" else LabelEncoder()
     )
 
-    # Normalize the features
-    X_train_norm = pd.DataFrame(
-        ln.fit_transform(X_train.to_numpy()), columns=X_train.columns
+    categorical_columns = X_train.select_dtypes(
+        include=["object", "category"]
+    ).columns.tolist()
+    numerical_columns = X_train.select_dtypes(include=["number"]).columns.tolist()
+
+    print(f"Number of Categorical columns: {len(categorical_columns)}")
+    print(f"Number of Numerical columns: {len(numerical_columns)}")
+
+    # Remove any NaN values for numerical data replace with mean
+    X_train[numerical_columns] = X_train[numerical_columns].apply(
+        lambda x: x.fillna(x.mean()), axis=0
     )
-    X_val_norm = pd.DataFrame(ln.transform(X_val.to_numpy()), columns=X_val.columns)
-    X_test_norm = pd.DataFrame(ln.transform(X_test.to_numpy()), columns=X_test.columns)
+    X_val[numerical_columns] = X_val[numerical_columns].apply(
+        lambda x: x.fillna(x.mean()), axis=0
+    )
+    X_test[numerical_columns] = X_test[numerical_columns].apply(
+        lambda x: x.fillna(x.mean()), axis=0
+    )
 
-    # Calculate the percentage of NAs in each column
-    percent_nas = X_train_norm.isna().mean()
-    # Create a mask for columns with less than 15% NAs
-    columns_to_keep = percent_nas < config["na_threshold"]
+    # Function to drop rows with NaNs in categorical columns in both X and y
+    def drop_na_categorical(X, y, categorical_columns):
+        na_indices = X[categorical_columns].isna().any(axis=1)
+        X_clean = X[~na_indices]
+        y_clean = y[~na_indices]
+        return X_clean, y_clean
 
-    # Use the mask to select columns with less than 15% NAs in all sets
-    X_train_norm = X_train_norm.loc[:, columns_to_keep]
-    X_val_norm = X_val_norm.loc[:, columns_to_keep]
-    X_test_norm = X_test_norm.loc[:, columns_to_keep]
+    # Drop rows with NaNs in categorical columns for train, validation, and test sets
+    if len(categorical_columns) > 0:
+        X_train, y_train = drop_na_categorical(X_train, y_train, categorical_columns)
+        X_val, y_val = drop_na_categorical(X_val, y_val, categorical_columns)
+        X_test, y_test = drop_na_categorical(X_test, y_test, categorical_columns)
 
-    # Remove rows with any NAs from X and corresponding rows from y
-    rows_to_keep_train = ~X_train_norm.isna().any(axis=1)
-    X_train_norm = X_train_norm.loc[rows_to_keep_train]
-    y_train = y_train[rows_to_keep_train.to_numpy()]  # Apply the same mask to y_train
+    # Extract the numerical columns and normalize them using only X_train
+    scaler = MinMaxScaler()
+    normalized_numerical_X_train = scaler.fit_transform(X_train[numerical_columns])
+    normalized_numerical_X_val = scaler.transform(X_val[numerical_columns])
+    normalized_numerical_X_test = scaler.transform(X_test[numerical_columns])
 
-    rows_to_keep_val = ~X_val_norm.isna().any(axis=1)
-    X_val_norm = X_val_norm.loc[rows_to_keep_val]
-    y_val = y_val[rows_to_keep_val.to_numpy()]  # Apply the same mask to y_val
+    normalized_numerical_df_train = pd.DataFrame(
+        normalized_numerical_X_train, columns=numerical_columns
+    )
+    normalized_numerical_df_val = pd.DataFrame(
+        normalized_numerical_X_val, columns=numerical_columns
+    )
+    normalized_numerical_df_test = pd.DataFrame(
+        normalized_numerical_X_test, columns=numerical_columns
+    )
+    # Extract the categorical columns and perform one-hot encoding using only X_train
+    if len(categorical_columns) > 0:
+        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
+            X_train[categorical_columns]
+        )
 
-    rows_to_keep_test = ~X_test_norm.isna().any(axis=1)
-    X_test_norm = X_test_norm.loc[rows_to_keep_test]
-    y_test = y_test[rows_to_keep_test.to_numpy()]  # Apply the same mask to y_test
+        # Concatenate the normalized numerical data and the encoded categorical data for X_train, X_val, and X_test
+        X_train_norm = pd.concat(
+            [
+                normalized_numerical_df_train.reset_index(drop=True),
+                X_train[categorical_columns].reset_index(drop=True),
+            ],
+            axis=1,
+        )
+        X_val_norm = pd.concat(
+            [
+                normalized_numerical_df_val.reset_index(drop=True),
+                X_val[categorical_columns].reset_index(drop=True),
+            ],
+            axis=1,
+        )
+        X_test_norm = pd.concat(
+            [
+                normalized_numerical_df_test.reset_index(drop=True),
+                X_test[categorical_columns].reset_index(drop=True),
+            ],
+            axis=1,
+        )
+    else:
+        encoder = None
+        X_train_norm = normalized_numerical_df_train
+        X_val_norm = normalized_numerical_df_val
+        X_test_norm = normalized_numerical_df_test
 
     # Normalize/Encode the target variable
     if config["task_type"] == "regression":
@@ -162,6 +212,7 @@ def preprocess_and_load_data(data_config=None):
         y_val_enc,
         y_test_enc,
         scaler_y,
+        encoder,
     )
 
 

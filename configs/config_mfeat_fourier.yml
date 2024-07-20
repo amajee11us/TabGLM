@@ -1,5 +1,5 @@
 data_config:
-  dataset: 971
+  dataset: mfeat_fourier
   target: binaryClass
   random_states:
     - 15
@@ -10,9 +10,9 @@ data_config:
   task_type: binary
   na_threshold: 0.15
 fit_config:
-  dataset: 971
+  dataset: mfeat_fourier
   num_epochs: 512
-  learning_rate: 0.0001
+  learning_rate: 1.0e-04
   task_type: binary
   project_name: tgrl_multi_modal
   random_state:
@@ -21,7 +21,7 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 224
+  batch_size: 240
   batch_size_transform: 10000
   consistency: true
   multimodal: true

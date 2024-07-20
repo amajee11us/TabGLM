@@ -1,5 +1,5 @@
 data_config:
-  dataset: 40499
+  dataset: texture
   target: Class
   random_states:
     - 15
@@ -10,7 +10,7 @@ data_config:
   task_type: multi_class
   na_threshold: 0.15
 fit_config:
-  dataset: 40499
+  dataset: texture
   num_epochs: 512
   learning_rate: 1.0e-04
   task_type: multi_class
@@ -21,7 +21,7 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 64
+  batch_size: 240
   batch_size_transform: 10000
   consistency: true
   multimodal: true

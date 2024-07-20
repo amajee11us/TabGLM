@@ -41,16 +41,19 @@ TEXT_ENCODER=$3
 
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
-datasets=("pc3" \
-        #   "ova_breast" \
-          "mfeat_fourier" \
+datasets=("bank" \
+          "blood" \
+          "calhousing" \
           "coil2000" \
+          "creditg" \
+          "diabetes" \
+          "heart" \
+          "income" \
+          "jungle" \
           "kr_vs_kp" \
-        #   "isolet" \
+          "mfeat_fourier" \
+          "pc3" \
           "texture")
-        #   "har" \
-        #   "dilbert")
-        #   "fashion_mnist", "cifar_10")
 
 # Loop through the array and print each string
 for dataset in "${datasets[@]}"; do
