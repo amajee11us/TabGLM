@@ -31,6 +31,8 @@ class TGRLDataloader(Dataset):
         self.raw_data = raw_data
         self.labels = labels
 
+        self.large_categorical_expansion = False
+
         # Convert categorical data into OneHotEncoded embeddings
         self.raw_data_graph = copy.deepcopy(self.raw_data)
         if categorical_encoder is not None:
@@ -38,7 +40,9 @@ class TGRLDataloader(Dataset):
             numerical_columns = self.raw_data_graph.select_dtypes(
                 include=["number"]
             ).columns.tolist()
-            raw_data_numerical = self.raw_data_graph[numerical_columns]
+
+            if len(numerical_columns) > 0:
+                raw_data_numerical = self.raw_data_graph[numerical_columns]
 
             # Extract Categorical columns and Encode
             categorical_columns = self.raw_data_graph.select_dtypes(
@@ -53,9 +57,18 @@ class TGRLDataloader(Dataset):
                 columns=categorical_encoder.get_feature_names_out(categorical_columns),
             )
 
-            self.raw_data_graph = pd.concat(
-                [raw_data_numerical, encoded_raw_data_categorical_df], axis=1
+            # Check if large number of categorical columns exist
+            self.large_categorical_expansion = (
+                len(numerical_columns) == 0
+                or len(encoded_raw_data_categorical_df.columns) > 200
             )
+
+            if len(numerical_columns) > 0:
+                self.raw_data_graph = pd.concat(
+                    [raw_data_numerical, encoded_raw_data_categorical_df], axis=1
+                )
+            else:
+                self.raw_data_graph = encoded_raw_data_categorical_df
 
         self.adjacency_matrix, _, _ = self.compute_adjacency_matrix(
             self_loop_weight=20, threshold=0.2

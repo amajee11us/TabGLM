@@ -109,6 +109,9 @@ def preprocess_and_load_data(data_config=None):
     print(f"Number of Categorical columns: {len(categorical_columns)}")
     print(f"Number of Numerical columns: {len(numerical_columns)}")
 
+    if len(categorical_columns) == 0 and len(numerical_columns) == 0:
+        raise Exception("No Columns found in dataset !!")
+
     # Remove any NaN values for numerical data replace with mean
     X_train[numerical_columns] = X_train[numerical_columns].apply(
         lambda x: x.fillna(x.mean()), axis=0
@@ -134,22 +137,24 @@ def preprocess_and_load_data(data_config=None):
         X_test, y_test = drop_na_categorical(X_test, y_test, categorical_columns)
 
     # Extract the numerical columns and normalize them using only X_train
-    scaler = MinMaxScaler()
-    normalized_numerical_X_train = scaler.fit_transform(X_train[numerical_columns])
-    normalized_numerical_X_val = scaler.transform(X_val[numerical_columns])
-    normalized_numerical_X_test = scaler.transform(X_test[numerical_columns])
+    if len(numerical_columns) > 0:
+        scaler = MinMaxScaler()
+        normalized_numerical_X_train = scaler.fit_transform(X_train[numerical_columns])
+        normalized_numerical_X_val = scaler.transform(X_val[numerical_columns])
+        normalized_numerical_X_test = scaler.transform(X_test[numerical_columns])
 
-    normalized_numerical_df_train = pd.DataFrame(
-        normalized_numerical_X_train, columns=numerical_columns
-    )
-    normalized_numerical_df_val = pd.DataFrame(
-        normalized_numerical_X_val, columns=numerical_columns
-    )
-    normalized_numerical_df_test = pd.DataFrame(
-        normalized_numerical_X_test, columns=numerical_columns
-    )
+        normalized_numerical_df_train = pd.DataFrame(
+            normalized_numerical_X_train, columns=numerical_columns
+        )
+        normalized_numerical_df_val = pd.DataFrame(
+            normalized_numerical_X_val, columns=numerical_columns
+        )
+        normalized_numerical_df_test = pd.DataFrame(
+            normalized_numerical_X_test, columns=numerical_columns
+        )
+
     # Extract the categorical columns and perform one-hot encoding using only X_train
-    if len(categorical_columns) > 0:
+    if len(numerical_columns) > 0 and len(categorical_columns) > 0:
         encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
             X_train[categorical_columns]
         )
@@ -176,11 +181,21 @@ def preprocess_and_load_data(data_config=None):
             ],
             axis=1,
         )
-    else:
+    elif len(numerical_columns) > 0 and len(categorical_columns) == 0:
+        # Only Numeric data found
         encoder = None
         X_train_norm = normalized_numerical_df_train
         X_val_norm = normalized_numerical_df_val
         X_test_norm = normalized_numerical_df_test
+    else:
+        # Only categorical data found - Assuming the case where no columns exists is handled
+        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
+            X_train[categorical_columns]
+        )
+
+        X_train_norm = X_train[categorical_columns].reset_index(drop=True)
+        X_val_norm = X_val[categorical_columns].reset_index(drop=True)
+        X_test_norm = X_test[categorical_columns].reset_index(drop=True)
 
     # Normalize/Encode the target variable
     if config["task_type"] == "regression":
