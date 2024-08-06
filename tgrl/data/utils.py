@@ -21,6 +21,7 @@ dataset_factory = {
     "bank": get_bank_dataset,
     "blood": get_blood_dataset,
     "calhousing": get_calhousing_dataset,
+    "calhousing_reg": get_calhousing_reg_dataset,
     "car": get_car_dataset,
     "creditg": get_creditg_dataset,
     "diabetes": get_diabetes_dataset,
