@@ -89,6 +89,12 @@ class TGRLMultiModalModel:
         )
         print("Done.")
 
+        #Check if we can use a text only pipeline
+        self.text_only = self.train_dataset.large_categorical_expansion
+        if self.text_only:
+            self.consistency = False
+            print("Rules for text only pipeline triggered !!")
+
         print("Processing Val Dataset ...")
         self.val_dataset = TGRLDataloader(
             X_val_norm,
@@ -127,8 +133,12 @@ class TGRLMultiModalModel:
             num_classes=self.num_classes,
             embedding_dim=adj_matrix.shape[0],
             is_supervised=True,
+            text_only=self.text_only
         )
 
+        num_of_parameters = sum(map(torch.numel, self.model.parameters()))
+        print("Number of Model Parameters : ", num_of_parameters)
+        
         if torch.cuda.device_count() > 1:
             print("Using", torch.cuda.device_count(), "GPUs!")
             self.model = torch.nn.DataParallel(self.model)
@@ -275,7 +285,7 @@ class TGRLMultiModalModel:
             is_supervised=True,
         )
         if self.task_type == "regression":
-            wandb.summary[f"final R2 {set[i][1]}"] = metrics["test_r2"]
+            wandb.summary[f"final R2"] = metrics["test_r2"]
         else:
             wandb.summary["final accuracy"] = metrics["test_accuracy"]
             wandb.summary["final f1"] = metrics["test_f1"]

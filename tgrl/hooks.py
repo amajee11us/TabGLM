@@ -78,6 +78,7 @@ def calculate_loss_and_predictions(outputs, labels, task_type, criterion):
     elif task_type == "regression":
         predicted = outputs
         loss = criterion(predicted, labels.float())
+        probabilities = None
     else:
         raise ValueError("Unknown task type!")
 
