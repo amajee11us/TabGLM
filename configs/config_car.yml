@@ -11,8 +11,8 @@ data_config:
   na_threshold: 0.15
 fit_config:
   dataset: car
-  num_epochs: 240
-  learning_rate: 1.0e-04
+  num_epochs: 500
+  learning_rate: 1.0e-03
   task_type: multi_class
   project_name: tgrl_multi_modal
   random_state:

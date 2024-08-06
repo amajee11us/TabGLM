@@ -59,8 +59,7 @@ class TGRLDataloader(Dataset):
 
             # Check if large number of categorical columns exist
             self.large_categorical_expansion = (
-                len(numerical_columns) == 0
-                or len(encoded_raw_data_categorical_df.columns) > 200
+                len(encoded_raw_data_categorical_df.columns) > 200
             )
 
             if len(numerical_columns) > 0:
