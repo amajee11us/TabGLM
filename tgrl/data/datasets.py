@@ -127,6 +127,28 @@ def get_calhousing_dataset(dataset_name, target, random_state):
 
     return X_train, X_val, X_test, y_train, y_val, y_test
 
+def get_calhousing_reg_dataset(dataset_name, target, random_state):
+    dataset_name = "calhousing" # No special name to regression dataset
+    dataset = pd.DataFrame(loadarff(os.path.join(DATASET_ROOT, dataset_name, 'houses.arff'))[0])
+    dataset = byte_to_string_columns(dataset)
+    dataset.rename(columns={'median_house_value': 'label'}, inplace=True)
+    # Make binary task by labelling upper half as true
+    median_price = dataset['label'].median()
+    # dataset['label'] = dataset['label'] > median_price
+    # dataset['label'] = dataset['label'].replace(binary_mapping) 
+
+    X, y = dataset.drop(target, axis=1), dataset[target]
+    X = X.loc[:, X.nunique() > 1]
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=random_state
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train, y_train, test_size=0.2, random_state=random_state
+    )
+
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
 def get_car_dataset(dataset_name, target, random_state):
     columns = ['buying', 'maint', 'doors', 'persons', 'lug_boot', 'safety_dict', 'label']
     dataset = pd.read_csv(os.path.join(DATASET_ROOT, dataset_name, 'car.data'), names=columns)
