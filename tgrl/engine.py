@@ -140,9 +140,10 @@ class TGRLMultiModalModel:
         num_of_parameters = sum(map(torch.numel, self.model.parameters()))
         print("Number of Model Parameters : ", num_of_parameters)
         
-        if torch.cuda.device_count() > 1:
+        if torch.cuda.is_available():
             print("Using", torch.cuda.device_count(), "GPUs!")
-            self.model = torch.nn.DataParallel(self.model)
+            if torch.cuda.device_count() > 1:
+                self.model = torch.nn.DataParallel(self.model)
             self.model = self.model.cuda()
 
         # Fetch Optimizer
