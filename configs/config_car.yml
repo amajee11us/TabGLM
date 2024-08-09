@@ -12,7 +12,7 @@ data_config:
 fit_config:
   dataset: car
   num_epochs: 500
-  learning_rate: 1.0e-03
+  learning_rate: 1.0e-04
   task_type: multi_class
   project_name: tgrl_multi_modal
   random_state:

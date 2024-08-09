@@ -199,7 +199,8 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
     if task_type == "regression":
         r2 = r2_score(labels, predictions) * 100
         metrics[f"{prefix}r2"] = r2
-        print(f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, R^2 {r2:.2f}%")
+        if epoch: 
+            print(f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, R^2 {r2:.2f}%")
 
     elif task_type in ["binary", "multi_class"]:
         accuracy = accuracy_score(labels, predictions) * 100
@@ -208,28 +209,24 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
         metrics[f"{prefix}f1"] = f1
         # metrics.update({f'{prefix}accuracy': accuracy, f'{prefix}f1': f1})
 
-        if probabilities:
-            if task_type == "binary":
-                auroc = roc_auc_score(labels, probabilities) * 100
-            else:
-                classes = np.unique(labels)
-                y_bin = label_binarize(labels, classes=classes)
-                auroc = (
-                    roc_auc_score(
-                        y_bin,
-                        np.array(probabilities),
-                        multi_class="ovr",
-                        average="macro",
-                    )
-                    * 100
+        if task_type == "binary":
+            auroc = roc_auc_score(labels, probabilities) * 100
+        else:
+            classes = np.unique(labels)
+            y_bin = label_binarize(labels, classes=classes)
+            auroc = (
+                roc_auc_score(
+                    y_bin,
+                    np.array(probabilities),
+                    multi_class="ovr",
+                    average="macro",
                 )
-            metrics[f"{prefix}auroc"] = auroc
+                * 100
+            )
+        metrics[f"{prefix}auroc"] = auroc
+        if epoch: 
             print(
                 f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%, AUROC {auroc:.2f}%"
-            )
-        else:
-            print(
-                f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%"
             )
 
     # Log metrics to wandb or any other experiment tracking system

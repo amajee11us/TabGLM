@@ -16,6 +16,7 @@ def main(config_paths):
             "random_states"
         ]  # Assumes both data_config and fit_config have the same random_states
         wandb_project_name = fit_config.get("project_name", None)
+        wandb_project_name = "tabGLM"
         local_save_path = fit_config.get("metrics_save_path", "tgrl_output_metrics.csv")
 
         for seed in random_states:

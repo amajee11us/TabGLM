@@ -154,12 +154,10 @@ def preprocess_and_load_data(data_config=None):
             normalized_numerical_X_test, columns=numerical_columns
         )
 
-    # Extract the categorical columns and perform one-hot encoding using only X_train
+    # Extract the categorical columns and perform label encoding using only X_train
     if len(numerical_columns) > 0 and len(categorical_columns) > 0:
-        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
-            X_train[categorical_columns]
-        )
-
+        encoder = {col: LabelEncoder().fit(X_train[col]) for col in categorical_columns}
+    
         # Concatenate the normalized numerical data and the encoded categorical data for X_train, X_val, and X_test
         X_train_norm = pd.concat(
             [
@@ -189,11 +187,9 @@ def preprocess_and_load_data(data_config=None):
         X_val_norm = normalized_numerical_df_val
         X_test_norm = normalized_numerical_df_test
     else:
-        # Only categorical data found - Assuming the case where no columns exists is handled
-        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
-            X_train[categorical_columns]
-        )
-
+        # Only categorical data found - Assuming the case where no columns exist is handled
+        encoder = {col: LabelEncoder().fit(X_train[col]) for col in categorical_columns}
+        
         X_train_norm = X_train[categorical_columns].reset_index(drop=True)
         X_val_norm = X_val[categorical_columns].reset_index(drop=True)
         X_test_norm = X_test[categorical_columns].reset_index(drop=True)
@@ -230,7 +226,6 @@ def preprocess_and_load_data(data_config=None):
         scaler_y,
         encoder,
     )
-
 
 def create_dataloader(dataset, phase, batch_size):
     # Create dataloaders

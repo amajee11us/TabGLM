@@ -11,7 +11,7 @@ data_config:
   na_threshold: 0.15
 fit_config:
   dataset: heart
-  num_epochs: 240
+  num_epochs: 500
   learning_rate: 1.0e-04
   task_type: binary
   project_name: tgrl_multi_modal

@@ -11,8 +11,8 @@ data_config:
   na_threshold: 0.15
 fit_config:
   dataset: pc3
-  num_epochs: 512
-  learning_rate: 1.0e-4
+  num_epochs: 500
+  learning_rate: 1.0e-04
   task_type: binary
   project_name: tgrl_multi_modal
   random_state:

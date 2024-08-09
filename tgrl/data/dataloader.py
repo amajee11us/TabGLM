@@ -49,12 +49,15 @@ class TGRLDataloader(Dataset):
                 include=["object", "category"]
             ).columns.tolist()
 
-            encoded_raw_data_categorical = categorical_encoder.transform(
-                self.raw_data_graph[categorical_columns]
+            # Encode Categorical columns using the provided LabelEncoder dictionary
+            encoded_raw_data_categorical = self.raw_data_graph[categorical_columns].apply(
+                lambda col: categorical_encoder[col.name].transform(col)
             )
+            
+            # Convert encoded data to DataFrame
             encoded_raw_data_categorical_df = pd.DataFrame(
                 encoded_raw_data_categorical,
-                columns=categorical_encoder.get_feature_names_out(categorical_columns),
+                columns=categorical_columns,
             )
 
             # Check if large number of categorical columns exist
