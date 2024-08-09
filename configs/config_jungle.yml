@@ -28,7 +28,7 @@ fit_config:
   verbose: true
   text_tokenizer: tapas
   text_encoder: tapas
-  best_model_path: models/best_model.pth
+  best_model_path: models/jungle/best_model.pth
   lr_patience: 10
   alpha: 0.2
   early_stopping_patience: 15
