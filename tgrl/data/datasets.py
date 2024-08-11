@@ -25,7 +25,19 @@ openml_dataset_name_to_id = {
     "kr_vs_kp": 3,
     "mfeat_fourier": 971,
     "coil2000": 298,
-    "texture": 40499
+    "texture": 40499,
+    "balance-scale": 11,
+    "mfeat-karhunen": 15,
+    "mfeat-morphological": 16,
+    "mfeat-zernike": 18,
+    "cmc": 23,
+    "tic-tac-toe": 50,
+    "vehicle": 54,
+    "eucalyptus": 188,
+    "analcatdata_author": 469,
+    "MiceProtein": 23380,
+    "steel-plates-fault": 179,
+    "dress-sales": 23381
 }
 
 def byte_to_string_columns(data):
@@ -272,4 +284,51 @@ def get_income_dataset(dataset_name, target, random_state):
     X_test, y_test = dataset_test.drop(target, axis=1), dataset_test[target]
     X_test = X_test.loc[:, X_test.nunique() > 1]
 
+    return X_train, X_val, X_test, y_train, y_val, y_test
+
+def load_carte_dataset(data_name, target, random_state):
+    """
+    Load a dataset from the CARTE benchmark, preprocess it, and split it into training, validation, and test sets.
+    """
+
+    datasets_supported = ["jp_anime", "used_cars_24", "wikiliq_beer", "us_presidential", "us_accidents_counts",
+    "journal_sjr", "buy_buy_baby", "anime_planet", "used_cars_pakistan", "us_accidents_severity", "babies_r_us",
+    "filmtv_movies", "chocolate_bar_ratings", "wine_enthusiasts_ratings", "museums", "ramen_ratings", "nba_draft",
+    "wine_vivino_rating", "employee_salaries", "used_cars_saudi_arabia", "videogame_sales", "michelin", "clear_corpus",
+    "yelp", "k_drama", "journal_jcr", "beer_ratings", "wine_dot_com_prices", "used_cars_dot_com", "mydramalist", 
+    "bikewale", "movies", "whisky", "wina_pl", "wikiliq_spirit",  "employee_remuneration", "wine_enthusiasts_prices", 
+    "used_cars_benz_italy", "wine_vivino_price", "coffee_ratings", "zomato", "rotten_tomatoes", "cardekho", "prescription_drugs", 
+    "roger_ebert", "bikedekho", "company_employees", "wine_dot_com_ratings", "spotify", "mlds_salaries", "fifa22_players"]
+
+    if data_name not in datasets_supported:
+        raise Exception("Dataset not supported !")
+    
+    # Load the data from the local directory
+    data_dir = os.path.join(
+        DATASET_ROOT, data_name, "raw.parquet")
+    data = pd.read_parquet(data_dir)
+    data.fillna(value=np.nan, inplace=True)
+    
+    # Load the configuration data
+    config_data_dir = os.path.join(
+        DATASET_ROOT, data_name, "config_data.json")
+    with open(config_data_dir, 'r') as filename:
+        config_data = json.load(filename)
+    
+    target = config_data["target_name"]
+
+    # Separate features and target
+    X, y = data.drop(target, axis=1), data[target]
+    
+    # Remove columns with a single unique value
+    X = X.loc[:, X.nunique() > 1]
+    
+    # Split the data into train, validation, and test sets
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=random_state
+    )
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train, y_train, test_size=0.2, random_state=random_state
+    )
+    
     return X_train, X_val, X_test, y_train, y_val, y_test
