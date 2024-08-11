@@ -16,6 +16,12 @@ from transformers.utils import logging
 
 logging.set_verbosity_error()
 
+def create_directories_in_path(file_path):
+    directory = os.path.dirname(file_path)
+    
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 """
 Set the seed values for consistent performance metrics
 """

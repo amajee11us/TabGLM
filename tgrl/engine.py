@@ -13,7 +13,7 @@ import numpy as np
 warnings.simplefilter("ignore")
 
 from tgrl.data import TGRLDataloader, create_dataloader
-from tgrl.utils import get_config, find_repo_root, set_seed
+from tgrl.utils import get_config, find_repo_root, set_seed, create_directories_in_path
 from tgrl.losses import get_criterion, get_consistency_criterion
 from tgrl.hooks import train_one_epoch, evaluate_model
 from tgrl.models.multi_modal import TGRLModel
@@ -50,6 +50,7 @@ class TGRLMultiModalModel:
 
         # Now, construct the path to the configuration file
         self.best_model_path = os.path.join(parent_directory, best_model_path)
+        create_directories_in_path(self.best_model_path)
 
         # Hyper-parameters
         self.num_epochs = config.get("num_epochs", 10)
@@ -139,9 +140,10 @@ class TGRLMultiModalModel:
         num_of_parameters = sum(map(torch.numel, self.model.parameters()))
         print("Number of Model Parameters : ", num_of_parameters)
         
-        if torch.cuda.device_count() > 1:
+        if torch.cuda.is_available():
             print("Using", torch.cuda.device_count(), "GPUs!")
-            self.model = torch.nn.DataParallel(self.model)
+            if torch.cuda.device_count() > 1:
+                self.model = torch.nn.DataParallel(self.model)
             self.model = self.model.cuda()
 
         # Fetch Optimizer
