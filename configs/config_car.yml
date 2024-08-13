@@ -12,7 +12,7 @@ data_config:
 fit_config:
   dataset: car
   num_epochs: 500
-  learning_rate: 1.0e-04
+  learning_rate: 0.0001
   task_type: multi_class
   project_name: tgrl_multi_modal
   random_state:
@@ -21,7 +21,7 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 240
+  batch_size: 256
   batch_size_transform: 10000
   consistency: true
   multimodal: true

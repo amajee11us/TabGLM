@@ -12,7 +12,7 @@ data_config:
 fit_config:
   dataset: income
   num_epochs: 500
-  learning_rate: 1.0e-04
+  learning_rate: 0.0001
   task_type: binary
   project_name: tgrl_multi_modal
   random_state:
@@ -21,13 +21,13 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 240
+  batch_size: 256
   batch_size_transform: 10000
   consistency: true
   multimodal: true
   verbose: true
-  text_tokenizer: tapas
-  text_encoder: tapas
+  text_tokenizer: tapex
+  text_encoder: tapex
   best_model_path: models/best_model.pth
   lr_patience: 10
   alpha: 0.2

@@ -8,7 +8,7 @@ from numpy.random import RandomState, SeedSequence, MT19937
 import numpy as np
 from pathlib import Path
 
-from sklearn.metrics import accuracy_score, f1_score, r2_score, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, r2_score, roc_auc_score, mean_squared_error#, 
 from sklearn.preprocessing import label_binarize
 import wandb
 
@@ -196,9 +196,13 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
     if epoch:
         metrics = {f"{prefix}loss": loss, "epoch": epoch}
 
-    if task_type == "regression":
+    if task_type == 'regression': 
         r2 = r2_score(labels, predictions) * 100
-        metrics[f"{prefix}r2"] = r2
+        mse = mean_squared_error(labels, predictions) 
+        #rmse = root_mean_squared_error(labels, predictions) 
+        metrics[f'{prefix}r2'] = r2
+        metrics[f'{prefix}mse'] = mse
+        #metrics[f'{prefix}rmse'] = rmse
         if epoch: 
             print(f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, R^2 {r2:.2f}%")
 

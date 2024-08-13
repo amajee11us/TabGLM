@@ -42,13 +42,13 @@ TEXT_ENCODER=$3
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
 datasets=("bank" \
-          "blood" \
+          #"blood" \
           "calhousing" \
-          "car" \
-          "coil2000" \
-          "creditg" \
-          "diabetes" \
-          "heart" \
+          #"car" \
+          #"coil2000" \
+          #"creditg" \
+          #"diabetes" \
+          #"heart" \
           "income" \
           "jungle" \
           "kr_vs_kp" \

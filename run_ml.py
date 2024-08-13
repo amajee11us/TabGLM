@@ -6,6 +6,7 @@ from tgrl.data import preprocess_and_load_data
 from tgrl.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
 import argparse
 import wandb
+import numpy as np
 
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
@@ -20,27 +21,38 @@ from sklearn.metrics import accuracy_score, f1_score, r2_score, mean_squared_err
 def encode_df(df, numerical_columns, categorical_columns, categorical_encoder):
     raw_data_numerical = df[numerical_columns]
     
+    # Initialize an empty DataFrame to hold the encoded categorical data
+    encoded_raw_data_categorical_df = pd.DataFrame()
+
     # Encode Categorical columns using the provided LabelEncoder dictionary
-    encoded_raw_data_categorical = df[categorical_columns].apply(
-        lambda col: categorical_encoder[col.name].transform(col)
-    )
-    
-    # Convert encoded data to DataFrame
-    encoded_raw_data_categorical_df = pd.DataFrame(
-        encoded_raw_data_categorical,
-        columns=categorical_columns,
-    )
-    
+    for col in categorical_columns:
+        try:
+            # Try transforming the column with the existing encoder
+            encoded_col = categorical_encoder[col].transform(df[col])
+        except ValueError as e:
+            # Handle unseen labels by assigning a special category (e.g., -1)
+            unseen_labels = set(df[col]) - set(categorical_encoder[col].classes_)
+            if unseen_labels:
+                print(f"Unseen labels found in column {col}: {unseen_labels}")
+                # Optionally, extend the encoder to handle unseen labels
+                # Add the unseen labels to the encoder's classes_
+                extended_classes = np.append(categorical_encoder[col].classes_, list(unseen_labels))
+                categorical_encoder[col].classes_ = extended_classes
+                # Map unseen labels to a special category (e.g., the next integer after the last known category)
+                encoded_col = df[col].apply(lambda x: categorical_encoder[col].transform([x])[0] if x in categorical_encoder[col].classes_ else -1)
+
+        encoded_raw_data_categorical_df[col] = encoded_col
+
+    # Concatenate numerical and encoded categorical columns
     df = pd.concat([raw_data_numerical, encoded_raw_data_categorical_df], axis=1)
     
-    return df
-    
+    return df    
 
 def main(config_paths):
     for config_path in config_paths:
         data_config, fit_config = get_config(config_path)
         random_states = data_config["random_states"]  # Assumes both data_config and fit_config have the same random_states
-        wandb_project_name = "TGRL_ML" #fit_config.get("project_name", None)
+        wandb_project_name = "TabGLM_ML" #fit_config.get("project_name", None)
 
         for seed in random_states:            
             # Set the random state in data_config and fit_config
@@ -69,33 +81,27 @@ def main(config_paths):
                 X_val_norm = encode_df(X_val_norm, numerical_columns, categorical_columns, cat_encoder)
                 X_test_norm = encode_df(X_test_norm, numerical_columns, categorical_columns, cat_encoder)
 
-#            def clean_feature_name(name):
- #               # Replace invalid characters with an underscore or remove them
-  #              return str(name).replace('[', '_').replace(']', '_').replace('<', '_').replace('>', '_')
-   #         
-    #        def clean_feature_names(feature_names):
-     #           # Apply the cleaning function to all feature names
-      #          return [clean_feature_name(name) for name in feature_names]
-#
- #           # Clean feature names
-  #          cleaned_feature_names_train = clean_feature_names(X_train_norm.columns)
-   #         cleaned_feature_names_val = clean_feature_names(X_val_norm.columns)
-    #        cleaned_feature_names_test = clean_feature_names(X_test_norm.columns)
-     #       
-      #      # Assign cleaned feature names back to the DataFrames
-       #     X_train_norm.columns = cleaned_feature_names_train
-        #    X_val_norm.columns = cleaned_feature_names_val
-         #   X_test_norm.columns = cleaned_feature_names_test
+            if data_config["task_type"] == "regression":
+                models = [
+                     {"model": GradientBoostingRegressor, "name": "GradientBoostingClassifier"},
+                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
+                     #{"model": LinearRegression, "name": "LogisticRegression"},
+                     {"model": RandomForestRegressor, "name": "RandomForestClassifier"},
+                     {"model": CatBoostRegressor, "name": "CatBoostClassifier"},
+                     {"model": xgb.XGBRegressor, "name": "XGBClassifier"},
+                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
+                ]
 
-            models = [
-                 {"model": GradientBoostingClassifier, "name": "GradientBoostingClassifier"},
-                 #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
-                {"model": LogisticRegression, "name": "LogisticRegression"},
-                {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
-                 {"model": CatBoostClassifier, "name": "CatBoostClassifier"},
-                 {"model": xgb.XGBClassifier, "name": "XGBClassifier"},
-                 #{"model": LGBMClassifier, "name": "LGBMClassifier"},
-            ]
+            else: 
+                models = [
+                     {"model": GradientBoostingClassifier, "name": "GradientBoostingClassifier"},
+                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
+                    {"model": LogisticRegression, "name": "LogisticRegression"},
+                    {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
+                     {"model": CatBoostClassifier, "name": "CatBoostClassifier"},
+                     {"model": xgb.XGBClassifier, "name": "XGBClassifier"},
+                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
+                ]
 
             # Loop through each model
             for model_config in models:
@@ -118,11 +124,21 @@ def main(config_paths):
                 y_val_pred = model.predict(X_val_norm)
                 y_test_pred = model.predict(X_test_norm)
 
-                # Predict outputs
-                y_train_proba = model.predict_proba(X_train_norm)[:, 1]
-                y_val_proba = model.predict_proba(X_val_norm)[:, 1]
-                y_test_proba = model.predict_proba(X_test_norm)[:, 1]
-                
+                if data_config["task_type"] == "regression":
+                    y_train_proba = None
+                    y_val_proba = None
+                    y_test_proba = None
+                elif data_config["task_type"] == "binary":
+                    # Predict outputs
+                    y_train_proba = model.predict_proba(X_train_norm)[:, 1]
+                    y_val_proba = model.predict_proba(X_val_norm)[:, 1]
+                    y_test_proba = model.predict_proba(X_test_norm)[:, 1]
+                elif data_config["task_type"] == "multi_class":
+                    # Predict outputs
+                    y_train_proba = model.predict_proba(X_train_norm)
+                    y_val_proba = model.predict_proba(X_val_norm)
+                    y_test_proba = model.predict_proba(X_test_norm)
+
                 print(f"Finished processing {config_path} with random seed {seed}")
     
                 print("Aggregating Metrics ...")

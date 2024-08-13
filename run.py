@@ -23,6 +23,7 @@ def main(config_paths):
             if wandb_project_name:
                 wandb.init(project=wandb_project_name)
                 wandb.config.fit_config = fit_config
+                wandb.config.random_state = seed
 
             # Set the random state in data_config and fit_config
             data_config["random_state"] = seed
