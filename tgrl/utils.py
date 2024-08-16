@@ -214,29 +214,29 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
         metrics[f"{prefix}f1"] = f1
         # metrics.update({f'{prefix}accuracy': accuracy, f'{prefix}f1': f1})
 
-        if probabilities:
-            if task_type == "binary":
-                auroc = roc_auc_score(labels, probabilities) * 100
-            else:
-                classes = np.unique(labels)
-                y_bin = label_binarize(labels, classes=classes)
-                auroc = (
-                    roc_auc_score(
-                        y_bin,
-                        np.array(probabilities),
-                        multi_class="ovr",
-                        average="macro",
-                    )
-                    * 100
-                )
-            metrics[f"{prefix}auroc"] = auroc
-            print(
-                f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%, AUROC {auroc:.2f}%"
-            )
+        #if probabilities:
+        if task_type == "binary":
+            auroc = roc_auc_score(labels, probabilities) * 100
         else:
-            print(
-                f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%"
+            classes = np.unique(labels)
+            y_bin = label_binarize(labels, classes=classes)
+            auroc = (
+                roc_auc_score(
+                    y_bin,
+                    np.array(probabilities),
+                    multi_class="ovr",
+                    average="macro",
+                )
+                * 100
             )
+        metrics[f"{prefix}auroc"] = auroc
+        print(
+            f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%, AUROC {auroc:.2f}%"
+        )
+        #else:
+        #    print(
+        #        f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%"
+        #    )
 
     # Log metrics to wandb or any other experiment tracking system
     wandb.log(metrics)

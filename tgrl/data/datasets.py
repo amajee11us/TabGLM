@@ -27,16 +27,16 @@ openml_dataset_name_to_id = {
     "coil2000": 298,
     "texture": 40499,
     "balance-scale": 11,
-    "mfeat-karhunen": 15,
-    "mfeat-morphological": 16,
-    "mfeat-zernike": 18,
+    "mfeat-karhunen": 16,
+    "mfeat-morphological": 18,
+    "mfeat-zernike": 22,
     "cmc": 23,
     "tic-tac-toe": 50,
     "vehicle": 54,
     "eucalyptus": 188,
     "analcatdata_author": 469,
-    "MiceProtein": 23380,
-    "steel-plates-fault": 179,
+    "MiceProtein": 40966,
+    "steel-plates-fault": 40982,
     "dress-sales": 23381
 }
 
