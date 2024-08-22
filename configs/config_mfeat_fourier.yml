@@ -1,0 +1,35 @@
+data_config:
+  dataset: mfeat_fourier
+  target: binaryClass
+  random_states:
+    - 15
+    - 108
+    - 180
+    - 234
+    - 250
+  task_type: binary
+  na_threshold: 0.15
+fit_config:
+  dataset: mfeat_fourier
+  num_epochs: 500
+  learning_rate: 1.0e-04
+  task_type: binary
+  project_name: tgrl_multi_modal
+  random_state:
+    - 15
+    - 108
+    - 180
+    - 234
+    - 250
+  batch_size: 240
+  batch_size_transform: 10000
+  consistency: true
+  multimodal: true
+  verbose: true
+  text_tokenizer: tapas
+  text_encoder: tapas
+  best_model_path: models/best_model.pth
+  lr_patience: 10
+  alpha: 0.2
+  early_stopping_patience: 15
+  consistency_loss_type: clip
