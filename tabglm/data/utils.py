@@ -13,8 +13,8 @@ from sklearn.preprocessing import (
 )
 from torch.utils.data import DataLoader
 
-from tgrl.utils import set_seed
-from tgrl.data.datasets import *
+from tabglm.utils import set_seed
+from tabglm.data.datasets import *
 
 dataset_factory = {
     # TabLLM benchmark datasets

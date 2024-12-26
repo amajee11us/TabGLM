@@ -12,14 +12,14 @@ import numpy as np
 
 warnings.simplefilter("ignore")
 
-from tgrl.data import TGRLDataloader, create_dataloader
-from tgrl.utils import get_config, find_repo_root, set_seed, create_directories_in_path
-from tgrl.losses import get_criterion, get_consistency_criterion
-from tgrl.hooks import train_one_epoch, evaluate_model
-from tgrl.models.multi_modal import TGRLModel
+from tabglm.data import TabGLMDataloader, create_dataloader
+from tabglm.utils import get_config, find_repo_root, set_seed, create_directories_in_path
+from tabglm.losses import get_criterion, get_consistency_criterion
+from tabglm.hooks import train_one_epoch, evaluate_model
+from tabglm.models.multi_modal import TabGLMModel
 
 
-class TGRLMultiModalModel:
+class TabGLMMultiModalModel:
     def __init__(self, fit_config=None):
 
         if fit_config is None:
@@ -67,7 +67,7 @@ class TGRLMultiModalModel:
 
         # Logistic Parameters
         self.verbose = config.get("verbose", True)
-        self.cache_dir = config.get("cache_dir", "/scratch/acf15929tu/tgrl")
+        self.cache_dir = config.get("cache_dir", "/scratch/acf15929tu/tabglm")
 
         # Representation specific parameters
         self.consistency = config.get("consistency", True)
@@ -81,7 +81,7 @@ class TGRLMultiModalModel:
     ):
 
         print("Processing Train Dataset ...")
-        self.train_dataset = TGRLDataloader(
+        self.train_dataset = TabGLMDataloader(
             X_train_norm,
             y_train_enc,
             multimodal=True,
@@ -97,7 +97,7 @@ class TGRLMultiModalModel:
             print("Rules for text only pipeline triggered !!")
 
         print("Processing Val Dataset ...")
-        self.val_dataset = TGRLDataloader(
+        self.val_dataset = TabGLMDataloader(
             X_val_norm,
             y_val_enc,
             multimodal=True,
@@ -126,8 +126,8 @@ class TGRLMultiModalModel:
         adj_matrix = torch.FloatTensor(self.train_dataset.adjacency_matrix).to(
             self.device
         )
-        # Fetch model - The TGRL multi-modal model
-        self.model = TGRLModel(
+        # Fetch model - The TabGLM multi-modal model
+        self.model = TabGLMModel(
             text_model_name=self.text_encoder,
             graph_input_dim=1,
             adjacency_matrix=adj_matrix,
@@ -268,7 +268,7 @@ class TGRLMultiModalModel:
         model = self.model
         model.load_state_dict(torch.load(self.best_model_path))
 
-        dataset = TGRLDataloader(
+        dataset = TabGLMDataloader(
             X,
             y,
             multimodal=True,

@@ -7,16 +7,16 @@ from scipy.stats import pearsonr
 from torch.utils.data import Dataset
 import copy
 
-from tgrl.models import text_model_dict
+from tabglm.models import text_model_dict
 
 # Ignore the HF warnings
 warnings.simplefilter("ignore")
 
 
-class TGRLDataloader(Dataset):
+class TabGLMDataloader(Dataset):
     """
     Table-Graph Multi-Modal DataLoader
-    Joint dataloader for the TGRL model.
+    Joint dataloader for the TabGLM model.
     """
 
     def __init__(

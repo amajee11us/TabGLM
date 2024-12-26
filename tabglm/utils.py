@@ -25,8 +25,6 @@ def create_directories_in_path(file_path):
 """
 Set the seed values for consistent performance metrics
 """
-
-
 def set_seed(seed, disable_cudnn=False):
     torch.manual_seed(seed)  # Seed the RNG for all devices (both CPU and CUDA).
     torch.cuda.manual_seed_all(
@@ -60,13 +58,6 @@ def set_seed(seed, disable_cudnn=False):
         # If you want to enable cuDNN, set it to True.
 
 
-# def normalize_adj_matrix(adj):
-#     D = torch.sum(adj, 0)
-#     D_hat = torch.diag(((D) ** (-0.5)))
-#     adj_normalized = torch.mm(torch.mm(D_hat, adj), D_hat)
-#     return adj_normalized
-
-
 def find_repo_root(path="."):
     current_path = Path(path).resolve()
     # Check the current path itself before checking parents
@@ -98,62 +89,6 @@ def to_dense_array(series):
     else:
         # If it's not a sparse array, just convert to NumPy array directly
         return series.to_numpy()
-
-
-# def create_dataloaders(dataset, phase, batch_size):
-#     # Create dataloaders
-#     shuffle = phase == "train"
-#     setloader = DataLoader(
-#         dataset,
-#         batch_size=batch_size,
-#         shuffle=shuffle,
-#         drop_last=False,
-#         num_workers=12,
-#         pin_memory=True,
-#     )
-#     return setloader
-
-
-# def get_criterion(task_type, y_train_enc):
-#     if task_type == "binary":
-#         positive_weight = np.sum(y_train_enc == 0) / np.sum(y_train_enc == 1)
-#         class_weights = torch.tensor([positive_weight], dtype=torch.float)
-#         criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
-#     elif task_type == "multi_class":
-#         num_classes = len(np.unique(y_train_enc))
-#         class_counts = np.bincount(y_train_enc)
-#         class_weights = 1.0 / (class_counts.astype(np.float32) + 1e-6)
-#         class_weights_tensor = torch.tensor(class_weights)
-#         criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-#     elif task_type == "regression":
-#         criterion = nn.MSELoss()
-
-#     return criterion
-
-
-# def get_consistency_criterion(consistency_loss_type):
-#     # Validate if the loss named in consistency_loss_type is supported
-#     if consistency_loss_type in supported_combinatorial_losses:
-#         loss_function_name = consistency_loss_type
-#         loss_type = "comb"  # Single keyword indicating the combinatorial losses
-#     elif consistency_loss_type == "mse":
-#         loss_type = "mse"
-#     else:
-#         raise Exception(
-#             "Loss Type: {}, does not match any known types: Choose between [mse, comb]".format(
-#                 consistency_loss_type
-#             )
-#         )
-
-#     # Chose the loss function based on the function type
-#     if loss_type == "mse":
-#         # MSE Loss instance for consistency loss
-#         consistency_criterion = nn.MSELoss()
-#         return consistency_criterion
-#     elif loss_type == "comb":
-#         consistency_criterion = combinatorial_loss(function_type=loss_function_name)
-#         return consistency_criterion
-
 
 def store_metrics_as_csv(metrics, save_path="output_metrics.csv"):
     """

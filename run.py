@@ -2,9 +2,9 @@ import os
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-from tgrl.engine import TGRLMultiModalModel
-from tgrl.data import preprocess_and_load_data
-from tgrl.utils import get_config, store_metrics_as_csv, set_seed
+from tabglm.engine import TabGLMMultiModalModel
+from tabglm.data import preprocess_and_load_data
+from tabglm.utils import get_config, store_metrics_as_csv, set_seed
 import argparse
 import wandb
 
@@ -16,7 +16,7 @@ def main(config_paths):
             "random_states"
         ]  # Assumes both data_config and fit_config have the same random_states
         wandb_project_name = fit_config.get("project_name", None)
-        local_save_path = fit_config.get("metrics_save_path", "tgrl_output_metrics.csv")
+        local_save_path = fit_config.get("metrics_save_path", "tabglm_output_metrics.csv")
 
         for seed in random_states:
             if wandb_project_name:
@@ -36,7 +36,7 @@ def main(config_paths):
                 scaler_y,
                 cat_encoder,
             ) = preprocess_and_load_data(data_config)
-            tabularTrans = TGRLMultiModalModel(fit_config)
+            tabularTrans = TabGLMMultiModalModel(fit_config)
 
             tabularTrans.fit(
                 X_train_norm=X_train_norm,

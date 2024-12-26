@@ -2,8 +2,8 @@ import os
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-from tgrl.data import preprocess_and_load_data
-from tgrl.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
+from tabglm.data import preprocess_and_load_data
+from tabglm.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
 import argparse
 import wandb
 import numpy as np
@@ -85,23 +85,18 @@ def main(config_paths):
             if data_config["task_type"] == "regression":
                 models = [
                      {"model": GradientBoostingRegressor, "name": "GradientBoostingClassifier"},
-                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
-                     #{"model": LinearRegression, "name": "LogisticRegression"},
                      {"model": RandomForestRegressor, "name": "RandomForestClassifier"},
                      {"model": CatBoostRegressor, "name": "CatBoostClassifier"},
                      {"model": xgb.XGBRegressor, "name": "XGBClassifier"},
-                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
                 ]
 
             else: 
                 models = [
                      {"model": GradientBoostingClassifier, "name": "GradientBoostingClassifier"},
-                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
-                    {"model": LogisticRegression, "name": "LogisticRegression"},
-                    {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
+                     {"model": LogisticRegression, "name": "LogisticRegression"},
+                     {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
                      {"model": CatBoostClassifier, "name": "CatBoostClassifier"},
                      {"model": xgb.XGBClassifier, "name": "XGBClassifier"},
-                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
                 ]
 
             # Loop through each model

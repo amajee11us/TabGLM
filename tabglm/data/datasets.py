@@ -1,7 +1,3 @@
-'''
-This is a placeholder for all tabular data loaders
-'''
-# from tgrl.data.utils import byte_to_string_columns
 import os
 import openml
 import yaml

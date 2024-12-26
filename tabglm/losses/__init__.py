@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 import numpy as np
 
-from tgrl.losses.clip_loss import CLIPLoss
-from tgrl.losses.facility_location import FL
-from tgrl.losses.graph_cut import GC
-from tgrl.losses.simclr import SimCLR
+from tabglm.losses.clip_loss import CLIPLoss
+from tabglm.losses.facility_location import FL
+from tabglm.losses.graph_cut import GC
+from tabglm.losses.simclr import SimCLR
 
 # TODO : Merge into existing class of GC
 from pytorch_metric_learning.losses import SelfSupervisedLoss, SupConLoss

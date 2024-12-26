@@ -1,15 +1,14 @@
 import os
 os.environ['OPENBLAS_NUM_THREADS'] = '1'
 
-#from tabRGB.models import TabularImageTransformer
-from tgrl.data.utils import preprocess_and_load_data
-from tgrl.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
+from tabglm.data.utils import preprocess_and_load_data
+from tabglm.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
 import argparse
 import wandb
 
 import pandas as pd
 from pytorch_tabular import TabularModel
-from pytorch_tabular.models import NodeConfig
+from pytorch_tabular.models import TabTransformerConfig, FTTransformerConfig, NodeConfig
 from pytorch_tabular.config import (
     DataConfig,
     OptimizerConfig,
@@ -33,19 +32,32 @@ def encode_df(df, numerical_columns, categorical_columns, categorical_encoder):
     
     return df
 
-def main(config_paths):
+def main(config_paths, model_name):
     for config_path in config_paths: 
         data_config, fit_config = get_config(config_path)
         random_states           = data_config['random_states']  # Assumes both data_config and fit_config have the same random_states
         wandb_project_name      = fit_config.get('project_name', None)
-        wandb_project_name      = "tabRGB_dl"
-        local_save_path         = fit_config.get('metrics_save_path', 'node_output_metrics.csv')
+        wandb_project_name      = "TabGLM_{}".format(model_name)
+        local_save_path         = fit_config.get('metrics_save_path', '{}_output_metrics.csv'.format(model_name))
 
         print(data_config['task_type'])
         if data_config['task_type']== "regression": 
             task_type= "regression"
         else: 
             task_type= "classification"
+            
+        # Select Experiment Settings
+        if model_name == "Tab-transformer":
+            TabModelConfig = TabTransformerConfig
+            max_epochs = 500
+        elif model_name == "FT-transformer":
+            TabModelConfig = FTTransformerConfig
+            max_epochs = 240
+        elif model_name == "NODE":
+            TabModelConfig = NodeConfig
+            max_epochs = 500
+        else:
+            raise Exception("Model Config Not found.")
 
         print(random_states)
         for seed in random_states:
@@ -116,7 +128,7 @@ def main(config_paths):
 
             optimizer_config = OptimizerConfig()
 
-            model_config = NodeConfig(
+            model_config = TabModelConfig(
                 task=task_type,
                 seed = seed
                 #layers="1024-512-512",  # Number of nodes in each layer
@@ -135,9 +147,6 @@ def main(config_paths):
             train_data = pd.concat([X_train_df, pd.Series(y_train_enc, name=data_config['target'])], axis=1)
             val_data = pd.concat([X_val_df, pd.Series(y_val_enc, name=data_config['target'])], axis=1)
             
-            # Loop through each model
-            model_name = "NODE"
-
             wandb.init(project=wandb_project_name)
             wandb.config.random_state = seed
 
@@ -153,13 +162,13 @@ def main(config_paths):
                 tabular_model.fit(train=train_data, validation=val_data)
 
             # Predict outputs
-            y_test_pred = tabular_model.predict(X_test_df)['prediction']
+            y_test_pred = tabular_model.predict(X_test_df)['c_prediction']
 
             if data_config["task_type"] == "regression":
                 y_test_proba = None
             elif data_config["task_type"] == "binary":
                 # Predict outputs
-                y_test_proba = tabular_model.predict(X_test_df)['1_probability']
+                y_test_proba = tabular_model.predict(X_test_df)['c_1_probability']
             elif data_config["task_type"] == "multi_class":
                 # Predict outputs
                 y_test_proba = tabular_model.predict(X_test_df).iloc[:, :-1]
@@ -174,10 +183,10 @@ def main(config_paths):
             
             print("Done")
             metrics["dataset"] = data_config["dataset"]
-            metrics["model_Name"] = "ft_transformer"
+            metrics["model_Name"] = model_name
             metrics["seed"] = seed
             store_metrics_as_csv(metrics, local_save_path) 
-            
+
             print("Done")
             wandb.finish()
 
@@ -190,6 +199,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some YAML configuration files.')
     # Add an argument, making it optional with nargs='*'
     parser.add_argument('yaml_names', type=str, nargs='*', help='A list of YAML file names (optional)')
+    # Add an argument, to select model 
+    parser.add_argument('model_name', type=str, choices=['Tab-transformer', 'FT-transformer', 'NODE'], help='Model Name')
+
     # Parse the arguments
     args = parser.parse_args()
     
@@ -201,4 +213,4 @@ if __name__ == "__main__":
     full_paths = [os.path.join(current_path, 'configs', yaml_name) for yaml_name in yaml_names_to_process]
 
     # Pass the list of YAML filenames to main function
-    main(full_paths)
+    main(full_paths, args.model_name)

@@ -47,7 +47,7 @@ To perform training and evaluation follow the following steps.
 CUDA_VISIBLE_DEVICES=<GPU_IDs> python run.py <CONFG_FILE>
 ```
 
-```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TGRL supports multi-GPU training.
+```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TabGLM supports multi-GPU training.
 
 ```CONFIG_FILE``` - Config file demonstrating data, training and evaluation parameters for each dataset.
 
@@ -70,7 +70,7 @@ We support experimentation on traditional Machine Learning (ML) models like - Ca
 CUDA_VISIBLE_DEVICES=<GPU_IDs> python run_ml.py <CONFG_FILE>
 ```
 
-```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TGRL supports multi-GPU training.
+```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TabGLM supports multi-GPU training.
 
 ```CONFIG_FILE``` - Config file demonstrating data, training and evaluation parameters for each dataset.
 
@@ -83,8 +83,19 @@ To perform training and evaluation on tabular Deep-Learning Models TabTransforme
 CUDA_VISIBLE_DEVICES=<GPU_IDs> python run_tab_dl.py <CONFG_FILE> <MODEL_NAME>[Tab-transformer | FT-transformer | NODE]
 ```
 
-```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TGRL supports multi-GPU training.
+```GPU_IDs``` - Comma separated integers indicating the GPUs to train on. TabGLM supports multi-GPU training.
 
 ```CONFIG_FILE``` - Config file demonstrating data, training and evaluation parameters for each dataset.
 
 ```MODEL_NAME``` - Name of the model to be used for the experiment.
+
+## Citation
+Please cite our work using the below citation - 
+```
+@inproceedings{majee2025tabglm,
+    title={Tab{GLM}: Tabular Graph Language Model for Learning Transferable Representations through Multi-Modal Consistency Minimization},
+    author={Anay Majee, Maria Xenochristou, Wei-Peng Chen},
+    booktitle={The 39th Annual AAAI Conference on Artificial Intelligence},
+    year={2025}
+}
+```

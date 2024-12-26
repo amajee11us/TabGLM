@@ -1,11 +1,11 @@
 import torch.nn as nn
 import torch
 
-from tgrl.models.graph_model import GraphNetwork
-from tgrl.models.text_model import TextNetwork
+from tabglm.models.graph_model import GraphNetwork
+from tabglm.models.text_model import TextNetwork
 
 
-class TGRLModel(nn.Module):
+class TabGLMModel(nn.Module):
     def __init__(
         self,
         text_model_name,
@@ -16,7 +16,7 @@ class TGRLModel(nn.Module):
         is_supervised=True,
         text_only=False,
     ):
-        super(TGRLModel, self).__init__()
+        super(TabGLMModel, self).__init__()
 
         self.text_only_network = text_only
 

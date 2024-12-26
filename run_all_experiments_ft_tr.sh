@@ -38,16 +38,19 @@ BATCH_SIZE=$2
 
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
-datasets=(#"pc3" 
-          "ova_breast" \
-          #"mfeat_fourier" \
-          #"coil2000" \
-          #"kr_vs_kp" 
-          "isolet" \
-          #"texture" 
-          "har" "dilbert" \
-          "fashion_mnist" \ #"cifar_10"
-          )
+datasets=("bank" \
+          "blood" \
+          "calhousing" \
+          "coil2000" \
+          "creditg" \
+          "diabetes" \
+          "heart" \
+          "income" \
+          "jungle" \
+          "kr_vs_kp" \
+          "mfeat_fourier" \
+          "pc3" \
+          "texture")
 
 # Loop through the array and print each string
 for dataset in "${datasets[@]}"; do
@@ -55,7 +58,7 @@ for dataset in "${datasets[@]}"; do
     update_yaml "$CONFIG_FILE_PATH" "fit_config.batch_size" "$BATCH_SIZE"
 
     echo "Running train and eval on $dataset dataset"
-    CUDA_VISIBLE_DEVICES=$GPUS python run_ft_tr.py config_${dataset}.yml
+    CUDA_VISIBLE_DEVICES=$GPUS python run_tab_dl.py config_${dataset}.yml FT-transformer
     
     echo "Done."
 done

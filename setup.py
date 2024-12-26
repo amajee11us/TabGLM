@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="tgrl",
+    name="tabglm",
     version="0.1",
     packages=find_packages(),
     description="Tabular Graph-Text Multi-Modal Representation Learning",

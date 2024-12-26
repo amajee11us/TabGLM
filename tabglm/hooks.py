@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import wandb
-from tgrl.utils import log_metrics
+from tabglm.utils import log_metrics
 
 def train_one_epoch(
     model,
