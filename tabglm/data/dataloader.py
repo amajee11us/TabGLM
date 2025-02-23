@@ -7,16 +7,16 @@ from scipy.stats import pearsonr
 from torch.utils.data import Dataset
 import copy
 
-from tgrl.models import text_model_dict
+from tabglm.models import text_model_dict
 
 # Ignore the HF warnings
 warnings.simplefilter("ignore")
 
 
-class TGRLDataloader(Dataset):
+class TabGLMDataloader(Dataset):
     """
     Table-Graph Multi-Modal DataLoader
-    Joint dataloader for the TGRL model.
+    Joint dataloader for the TabGLM model.
     """
 
     def __init__(
@@ -49,15 +49,12 @@ class TGRLDataloader(Dataset):
                 include=["object", "category"]
             ).columns.tolist()
 
-            # Encode Categorical columns using the provided LabelEncoder dictionary
-            encoded_raw_data_categorical = self.raw_data_graph[categorical_columns].apply(
-                lambda col: categorical_encoder[col.name].transform(col)
+            encoded_raw_data_categorical = categorical_encoder.transform(
+                self.raw_data_graph[categorical_columns]
             )
-            
-            # Convert encoded data to DataFrame
             encoded_raw_data_categorical_df = pd.DataFrame(
                 encoded_raw_data_categorical,
-                columns=categorical_columns,
+                columns=categorical_encoder.get_feature_names_out(categorical_columns),
             )
 
             # Check if large number of categorical columns exist

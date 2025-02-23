@@ -2,8 +2,8 @@ import os
 
 os.environ["OPENBLAS_NUM_THREADS"] = "1"
 
-from tgrl.data import preprocess_and_load_data
-from tgrl.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
+from tabglm.data import preprocess_and_load_data
+from tabglm.utils import get_config, store_metrics_as_csv, set_seed, log_metrics
 import argparse
 import wandb
 import numpy as np
@@ -20,39 +20,42 @@ from sklearn.metrics import accuracy_score, f1_score, r2_score, mean_squared_err
 
 def encode_df(df, numerical_columns, categorical_columns, categorical_encoder):
     raw_data_numerical = df[numerical_columns]
+    raw_data_categorical = df[categorical_columns]
+
+    # Transform categorical columns using the fitted OneHotEncoder
+    encoded_categorical = categorical_encoder.transform(raw_data_categorical)
     
-    # Initialize an empty DataFrame to hold the encoded categorical data
-    encoded_raw_data_categorical_df = pd.DataFrame()
-
-    # Encode Categorical columns using the provided LabelEncoder dictionary
-    for col in categorical_columns:
-        try:
-            # Try transforming the column with the existing encoder
-            encoded_col = categorical_encoder[col].transform(df[col])
-        except ValueError as e:
-            # Handle unseen labels by assigning a special category (e.g., -1)
-            unseen_labels = set(df[col]) - set(categorical_encoder[col].classes_)
-            if unseen_labels:
-                print(f"Unseen labels found in column {col}: {unseen_labels}")
-                # Optionally, extend the encoder to handle unseen labels
-                # Add the unseen labels to the encoder's classes_
-                extended_classes = np.append(categorical_encoder[col].classes_, list(unseen_labels))
-                categorical_encoder[col].classes_ = extended_classes
-                # Map unseen labels to a special category (e.g., the next integer after the last known category)
-                encoded_col = df[col].apply(lambda x: categorical_encoder[col].transform([x])[0] if x in categorical_encoder[col].classes_ else -1)
-
-        encoded_raw_data_categorical_df[col] = encoded_col
-
-    # Concatenate numerical and encoded categorical columns
-    df = pd.concat([raw_data_numerical, encoded_raw_data_categorical_df], axis=1)
+    # Convert to a dense array if the result is sparse
+    if hasattr(encoded_categorical, "toarray"):
+        encoded_categorical = encoded_categorical.toarray()
     
-    return df    
+    # Build column names for the one-hot encoded features.
+    # For sklearn >= 1.0, you can use get_feature_names_out:
+    try:
+        onehot_columns = categorical_encoder.get_feature_names_out(categorical_columns)
+    except AttributeError:
+        # For older versions, build names manually:
+        onehot_columns = []
+        for i, col in enumerate(categorical_columns):
+            for category in categorical_encoder.categories_[i]:
+                onehot_columns.append(f"{col}_{category}")
+    
+    # Create a DataFrame for the encoded categorical data
+    encoded_categorical_df = pd.DataFrame(encoded_categorical, 
+                                          columns=onehot_columns,
+                                          index=df.index)
+    
+    # Concatenate the numerical data with the one-hot encoded categorical data
+    df_encoded = pd.concat([raw_data_numerical, encoded_categorical_df], axis=1)
+    
+    return df_encoded
 
 def main(config_paths):
     for config_path in config_paths:
         data_config, fit_config = get_config(config_path)
         random_states = data_config["random_states"]  # Assumes both data_config and fit_config have the same random_states
         wandb_project_name = "TabGLM_ML" #fit_config.get("project_name", None)
+        local_save_path         = fit_config.get('metrics_save_path', 'ml_output_metrics.csv')
 
         for seed in random_states:            
             # Set the random state in data_config and fit_config
@@ -84,23 +87,18 @@ def main(config_paths):
             if data_config["task_type"] == "regression":
                 models = [
                      {"model": GradientBoostingRegressor, "name": "GradientBoostingClassifier"},
-                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
-                     #{"model": LinearRegression, "name": "LogisticRegression"},
                      {"model": RandomForestRegressor, "name": "RandomForestClassifier"},
                      {"model": CatBoostRegressor, "name": "CatBoostClassifier"},
                      {"model": xgb.XGBRegressor, "name": "XGBClassifier"},
-                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
                 ]
 
             else: 
                 models = [
                      {"model": GradientBoostingClassifier, "name": "GradientBoostingClassifier"},
-                     #{"model": ExtraTreesClassifier, "name": "ExtraTreesClassifier"},
-                    {"model": LogisticRegression, "name": "LogisticRegression"},
-                    {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
+                     {"model": LogisticRegression, "name": "LogisticRegression"},
+                     {"model": RandomForestClassifier, "name": "RandomForestClassifier"},
                      {"model": CatBoostClassifier, "name": "CatBoostClassifier"},
                      {"model": xgb.XGBClassifier, "name": "XGBClassifier"},
-                     #{"model": LGBMClassifier, "name": "LGBMClassifier"},
                 ]
 
             # Loop through each model
@@ -142,10 +140,16 @@ def main(config_paths):
                 print(f"Finished processing {config_path} with random seed {seed}")
     
                 print("Aggregating Metrics ...")
-                log_metrics(data_config['task_type'], y_train_enc, y_train_pred, y_train_proba, loss=None, phase="train")
-                log_metrics(data_config['task_type'], y_val_enc, y_val_pred, y_val_proba, loss=None, phase="val")
-                log_metrics(data_config['task_type'], y_test_enc, y_test_pred, y_test_proba, loss=None, phase="test")
+                log_metrics(data_config['task_type'], y_train_enc, y_train_pred, y_train_proba, loss=0.0, phase="train")
+                log_metrics(data_config['task_type'], y_val_enc, y_val_pred, y_val_proba, loss=0.0, phase="val")
+                metrics = log_metrics(data_config['task_type'], y_test_enc, y_test_pred, y_test_proba, loss=0.0, phase="test")
                 print("Done")
+                                
+                print("Done")
+                metrics["dataset"] = data_config["dataset"]
+                metrics["model_Name"] = model_name
+                metrics["seed"] = seed
+                store_metrics_as_csv(metrics, local_save_path) 
 
                 wandb.finish()
 

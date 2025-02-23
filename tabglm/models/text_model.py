@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from tgrl.models import text_model_dict as model_dict
+from tabglm.models import text_model_dict as model_dict
 
 # Create a new model class without the classifier
 class EncoderOnlyTextModel(nn.Module):

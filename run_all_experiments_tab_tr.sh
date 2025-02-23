@@ -24,8 +24,8 @@ update_yaml() {
 }
 
 # Check if correct number of arguments is provided
-if [[ $# -ne 3 ]]; then
-    echo "Usage: $0 <GPU_IDs> <Batch_Size> <Text_Encoder>"
+if [[ $# -ne 2 ]]; then
+    echo "Usage: $0 <GPU_IDs> <Batch_Size>"
     exit 1
 fi
 
@@ -36,15 +36,11 @@ GPUS=$1
 # Since early stopping in enabled, the number of epochs need not be varied
 BATCH_SIZE=$2
 
-# Pass the text encoder as an argument to the model
-TEXT_ENCODER=$3
-
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
 datasets=("bank" \
           "blood" \
           "calhousing" \
-          "car" \
           "coil2000" \
           "creditg" \
           "diabetes" \
@@ -60,11 +56,9 @@ datasets=("bank" \
 for dataset in "${datasets[@]}"; do
     CONFIG_FILE_PATH="config_${dataset}.yml"
     update_yaml "$CONFIG_FILE_PATH" "fit_config.batch_size" "$BATCH_SIZE"
-    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_encoder" "$TEXT_ENCODER"
-    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_tokenizer" "$TEXT_ENCODER"
 
     echo "Running train and eval on $dataset dataset"
-    CUDA_VISIBLE_DEVICES=$GPUS python run.py config_${dataset}.yml
-
+    CUDA_VISIBLE_DEVICES=$GPUS python run_tab_dl.py config_${dataset}.yml Tab-transformer
+    
     echo "Done."
 done

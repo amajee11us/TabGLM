@@ -35,6 +35,10 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+.pt_tmp/
+catboost_info/
+lightning_logs/
+saved_models/
 
 # Unit test / coverage reports
 htmlcov/

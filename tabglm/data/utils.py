@@ -13,8 +13,8 @@ from sklearn.preprocessing import (
 )
 from torch.utils.data import DataLoader
 
-from tgrl.utils import set_seed
-from tgrl.data.datasets import *
+from tabglm.utils import set_seed
+from tabglm.data.datasets import *
 
 dataset_factory = {
     # TabLLM benchmark datasets
@@ -34,6 +34,71 @@ dataset_factory = {
     "mfeat_fourier": get_openml_dataset,
     "coil2000": get_openml_dataset,
     "texture": get_openml_dataset,
+    # TabPFN benchmark datasets
+    "balance-scale": get_openml_dataset,
+    "mfeat-karhunen": get_openml_dataset,
+    "mfeat-morphological": get_openml_dataset,
+    "mfeat-zernike": get_openml_dataset,
+    "cmc": get_openml_dataset,
+    "tic-tac-toe": get_openml_dataset,
+    "vehicle": get_openml_dataset,
+    "eucalyptus": get_openml_dataset,
+    "analcatdata_author": get_openml_dataset,
+    "MiceProtein": get_openml_dataset,
+    "steel-plates-fault": get_openml_dataset,
+    "dress-sales": get_openml_dataset,
+    # CARTE benchmark datasets
+    "jp_anime": load_carte_dataset,
+    "used_cars_24": load_carte_dataset,
+    "wikiliq_beer": load_carte_dataset,
+    "us_presidential": load_carte_dataset,
+    "us_accidents_counts": load_carte_dataset,
+    "journal_sjr": load_carte_dataset,
+    "buy_buy_baby": load_carte_dataset,
+    "anime_planet": load_carte_dataset,
+    "used_cars_pakistan": load_carte_dataset,
+    "us_accidents_severity": load_carte_dataset,
+    "babies_r_us": load_carte_dataset,
+    "filmtv_movies": load_carte_dataset,
+    "chocolate_bar_ratings": load_carte_dataset,
+    "wine_enthusiasts_ratings": load_carte_dataset,
+    "museums": load_carte_dataset,
+    "ramen_ratings": load_carte_dataset,
+    "nba_draft": load_carte_dataset,
+    "wine_vivino_rating": load_carte_dataset,
+    "employee_salaries": load_carte_dataset,
+    "used_cars_saudi_arabia": load_carte_dataset,
+    "videogame_sales": load_carte_dataset,
+    "michelin": load_carte_dataset,
+    "clear_corpus": load_carte_dataset,
+    "yelp": load_carte_dataset,
+    "k_drama": load_carte_dataset,
+    "journal_jcr": load_carte_dataset,
+    "beer_ratings": load_carte_dataset,
+    "wine_dot_com_prices": load_carte_dataset,
+    "used_cars_dot_com": load_carte_dataset,
+    "mydramalist": load_carte_dataset,
+    "bikewale": load_carte_dataset,
+    "movies": load_carte_dataset,
+    "whisky": load_carte_dataset,
+    "wina_pl": load_carte_dataset,
+    "wikiliq_spirit": load_carte_dataset,
+    "employee_remuneration": load_carte_dataset,
+    "wine_enthusiasts_prices": load_carte_dataset,
+    "used_cars_benz_italy": load_carte_dataset,
+    "wine_vivino_price": load_carte_dataset,
+    "coffee_ratings": load_carte_dataset,
+    "zomato": load_carte_dataset,
+    "rotten_tomatoes": load_carte_dataset,
+    "cardekho": load_carte_dataset,
+    "prescription_drugs": load_carte_dataset,
+    "roger_ebert": load_carte_dataset,
+    "bikedekho": load_carte_dataset,
+    "company_employees": load_carte_dataset,
+    "wine_dot_com_ratings": load_carte_dataset,
+    "spotify": load_carte_dataset,
+    "mlds_salaries": load_carte_dataset,
+    "fifa22_players": load_carte_dataset,
 }
 
 
@@ -154,10 +219,12 @@ def preprocess_and_load_data(data_config=None):
             normalized_numerical_X_test, columns=numerical_columns
         )
 
-    # Extract the categorical columns and perform label encoding using only X_train
+    # Extract the categorical columns and perform one-hot encoding using only X_train
     if len(numerical_columns) > 0 and len(categorical_columns) > 0:
-        encoder = {col: LabelEncoder().fit(X_train[col]) for col in categorical_columns}
-    
+        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
+            X_train[categorical_columns]
+        )
+
         # Concatenate the normalized numerical data and the encoded categorical data for X_train, X_val, and X_test
         X_train_norm = pd.concat(
             [
@@ -187,9 +254,11 @@ def preprocess_and_load_data(data_config=None):
         X_val_norm = normalized_numerical_df_val
         X_test_norm = normalized_numerical_df_test
     else:
-        # Only categorical data found - Assuming the case where no columns exist is handled
-        encoder = {col: LabelEncoder().fit(X_train[col]) for col in categorical_columns}
-        
+        # Only categorical data found - Assuming the case where no columns exists is handled
+        encoder = OneHotEncoder(handle_unknown="ignore", sparse_output=False).fit(
+            X_train[categorical_columns]
+        )
+
         X_train_norm = X_train[categorical_columns].reset_index(drop=True)
         X_val_norm = X_val[categorical_columns].reset_index(drop=True)
         X_test_norm = X_test[categorical_columns].reset_index(drop=True)
