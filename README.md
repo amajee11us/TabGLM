@@ -17,6 +17,7 @@ conda create --name tabglm python=3.12.4
 conda activate tabglm
 conda install pytorch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 pytorch-cuda=11.8 -c pytorch -c nvidia
 pip install "pytorch_tabular"
+pip install catboost xgboost
 
 sudo apt-get install jq
 
@@ -54,14 +55,16 @@ CUDA_VISIBLE_DEVICES=<GPU_IDs> python run.py <CONFG_FILE>
 To Execute all experiments (subject to resource availability) please use the below command.
 
 ```
-bash run_all_experiments.sh <GPU_IDs> <BATCH_SIZE>
+bash run_all_experiments.sh <GPU_IDs> <BATCH_SIZE> <TEXT_ENCODER>
 ```
 
-There are two key command line arguments -
+There are three key command line arguments -
 
 ```GPU_IDs``` represent comma separated list of GPUs.
 
 ```BATCH_SIZE``` represents the number of records in a batch (vary based on GPU capacity).
+
+```TEXT_EXCODER``` represents the text encoder to be used. You can currently choose between [tapas | tapex].
 
 ### (b) Traditional ML models
 We support experimentation on traditional Machine Learning (ML) models like - CatBoost, XGBoost, Logistic Regression (LR). We perform training and evaluation by following the below steps.
@@ -75,6 +78,18 @@ CUDA_VISIBLE_DEVICES=<GPU_IDs> python run_ml.py <CONFG_FILE>
 ```CONFIG_FILE``` - Config file demonstrating data, training and evaluation parameters for each dataset.
 
 The aforementioned script executes all 4 ML models each for 5 different seed values and stores the results into a wandb channel.
+
+To Execute all experiments (subject to resource availability) please use the below command.
+
+```
+bash run_all_experiments_ml.sh <GPU_IDs> <BATCH_SIZE>
+```
+
+There are two key command line arguments -
+
+```GPU_IDs``` represent comma separated list of GPUs.
+
+```BATCH_SIZE``` represents the number of records in a batch (vary based on GPU capacity).
 
 ### (c) Tabular DL models
 To perform training and evaluation on tabular Deep-Learning Models TabTransformer, FT-Transformer and NODE, follow the following steps.
