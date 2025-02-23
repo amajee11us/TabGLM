@@ -41,7 +41,7 @@ TEXT_ENCODER=$3
 
 # Declare an array of strings of dataset names
 # Note - These names are how they appear in the configs and not on openML
-datasets=("bank" \
+datasets=(#"bank" \
           "blood" \
           "calhousing" \
           "car" \
@@ -54,17 +54,15 @@ datasets=("bank" \
           "kr_vs_kp" \
           "mfeat_fourier" \
           "pc3" \
-          "texture")
+          "texture"
+          )
 
 # Loop through the array and print each string
 for dataset in "${datasets[@]}"; do
     CONFIG_FILE_PATH="config_${dataset}.yml"
-    update_yaml "$CONFIG_FILE_PATH" "fit_config.batch_size" "$BATCH_SIZE"
-    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_encoder" "$TEXT_ENCODER"
-    update_yaml "$CONFIG_FILE_PATH" "fit_config.text_tokenizer" "$TEXT_ENCODER"
 
     echo "Running train and eval on $dataset dataset"
-    CUDA_VISIBLE_DEVICES=$GPUS python run.py config_${dataset}.yml
+    CUDA_VISIBLE_DEVICES=$GPUS python run_ml.py config_${dataset}.yml
 
     echo "Done."
 done

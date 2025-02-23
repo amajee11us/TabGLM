@@ -1,5 +1,5 @@
 data_config:
-  dataset: calhousing
+  dataset: calhousing_reg
   target: label
   random_states:
     - 15
@@ -7,13 +7,13 @@ data_config:
     - 180
     - 234
     - 250
-  task_type: binary
+  task_type: regression
   na_threshold: 0.15
 fit_config:
-  dataset: calhousing
-  num_epochs: 240
-  learning_rate: 1.0e-04
-  task_type: binary
+  dataset: calhousing_reg
+  num_epochs: 500
+  learning_rate: 0.0001
+  task_type: regression
   project_name: tgrl_multi_modal
   random_state:
     - 15
@@ -21,7 +21,7 @@ fit_config:
     - 180
     - 234
     - 250
-  batch_size: 240
+  batch_size: 256
   batch_size_transform: 10000
   consistency: true
   multimodal: true

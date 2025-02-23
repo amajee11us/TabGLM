@@ -8,7 +8,7 @@ from numpy.random import RandomState, SeedSequence, MT19937
 import numpy as np
 from pathlib import Path
 
-from sklearn.metrics import accuracy_score, f1_score, r2_score, roc_auc_score
+from sklearn.metrics import accuracy_score, f1_score, r2_score, roc_auc_score, mean_squared_error 
 from sklearn.preprocessing import label_binarize
 import wandb
 
@@ -137,10 +137,13 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
     if epoch:
         metrics = {f"{prefix}loss": loss, "epoch": epoch}
 
-    if task_type == "regression":
+    if task_type == "regression": 
         r2 = r2_score(labels, predictions) * 100
-        metrics[f"{prefix}r2"] = r2
-        print(f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, R^2 {r2:.2f}%")
+        mse = mean_squared_error(labels, predictions)  
+        metrics[f'{prefix}r2'] = r2
+        metrics[f'{prefix}mse'] = mse
+        if epoch: 
+            print(f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, R^2 {r2:.2f}%")
 
     elif task_type in ["binary", "multi_class"]:
         accuracy = accuracy_score(labels, predictions) * 100
@@ -149,7 +152,6 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
         metrics[f"{prefix}f1"] = f1
         # metrics.update({f'{prefix}accuracy': accuracy, f'{prefix}f1': f1})
 
-        #if probabilities:
         if task_type == "binary":
             auroc = roc_auc_score(labels, probabilities) * 100
         else:
@@ -165,13 +167,10 @@ def log_metrics(task_type, labels, predictions, probabilities, loss, phase, epoc
                 * 100
             )
         metrics[f"{prefix}auroc"] = auroc
-        print(
-            f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%, AUROC {auroc:.2f}%"
-        )
-        #else:
-        #    print(
-        #        f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%"
-        #    )
+        if epoch: 
+            print(
+                f"Epoch {epoch}: {phase.capitalize()} Loss {loss:.4f}, Accuracy {accuracy:.2f}%, F1 {f1:.2f}%, AUROC {auroc:.2f}%"
+            )
 
     # Log metrics to wandb or any other experiment tracking system
     wandb.log(metrics)
